@@ -1,5 +1,3 @@
-import 'kategori.dart';
-
 class Alat {
   final int id;
   final String namaAlat;
@@ -8,7 +6,6 @@ class Alat {
   final int hargaPerHari;
   final String kondisi;
   final String status;
-  final Kategori? kategori;
 
   Alat({
     required this.id,
@@ -18,19 +15,17 @@ class Alat {
     required this.hargaPerHari,
     required this.kondisi,
     required this.status,
-    this.kategori,
   });
 
-  factory Alat.fromJson(Map<String, dynamic> json) => Alat(
-    id: json['id'] as int,
-    namaAlat: json['nama_alat'] as String,
-    kategoriId: json['kategori_id'] as int,
-    stok: (json['stok'] as num).toInt(),
-    hargaPerHari: (json['harga_per_hari'] as num).toInt(),
-    kondisi: (json['kondisi'] ?? '') as String,
-    status: (json['status'] ?? '') as String,
-    kategori: json['kategori'] != null
-        ? Kategori.fromJson(json['kategori'] as Map<String, dynamic>)
-        : null,
-  );
+  factory Alat.fromJson(Map<String, dynamic> json) {
+    return Alat(
+      id: json['id'],
+      namaAlat: json['nama_alat'],
+      kategoriId: json['kategori_id'],
+      stok: json['stok'],
+      hargaPerHari: json['harga_per_hari'],
+      kondisi: json['kondisi'],
+      status: json['status'],
+    );
+  }
 }

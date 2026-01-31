@@ -5,70 +5,67 @@ class AuthService {
 
   AuthService(this._client);
 
-  Future<void> login(String email, String password) async {
-    try {
-      final res = await _client.auth.signInWithPassword(
-        email: email.trim(),
-        password: password,
-      );
-
-      if (res.session == null) {
-        throw Exception('Login gagal. Email atau password salah.');
-      }
-    } on AuthException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception('Login error: $e');
-    }
-  }
-
+  // ===========================
+  // REGISTER USER + ROLE
+  // ===========================
   Future<void> register({
     required String nama,
     required String email,
     required String noHp,
     required String password,
+    required String role,
+    required String statusAkun,
   }) async {
-    try {
-      // WAJIB untuk Flutter Web supaya request auth tidak gagal fetch
-      final redirect = Uri.base.origin; // contoh: http://localhost:51536
+    // 1. Signup Supabase Auth
+    final res = await _client.auth.signUp(email: email, password: password);
 
-      final res = await _client.auth.signUp(
-        email: email.trim(),
-        password: password,
-        emailRedirectTo: redirect,
-      );
+    final userId = res.user?.id;
 
-      final user = res.user;
-      if (user == null) {
-        throw Exception('Register gagal. Coba lagi.');
-      }
-
-      // Insert ke tabel users sesuai ERD kamu (JANGAN UBAH KOLOM)
-      await _client.from('users').insert({
-        'id': user.id,
-        'nama': nama.trim(),
-        'email': email.trim(),
-        'no_hp': noHp.trim(),
-        'role': 'peminjam',
-      });
-    } on AuthException catch (e) {
-      // contoh: "User already registered"
-      throw Exception(e.message);
-    } on PostgrestException catch (e) {
-      // contoh: RLS/policy/constraint error
-      throw Exception('DB error: ${e.message}');
-    } catch (e) {
-      throw Exception('Register error: $e');
+    if (userId == null) {
+      throw Exception("Register gagal!");
     }
+
+    // 2. Insert ke tabel users
+    await _client.from('users').insert({
+      'id': userId,
+      'nama': nama,
+      'email': email,
+      'no_hp': noHp,
+      'role': role,
+      'status_akun': statusAkun,
+    });
   }
 
+  // ===========================
+  // LOGIN
+  // ===========================
+  Future<AuthResponse> login({
+    required String email,
+    required String password,
+  }) async {
+    return await _client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  // ===========================
+  // GET ROLE + STATUS
+  // ===========================
+  Future<Map<String, dynamic>> getUserRole(String userId) async {
+    final data = await _client
+        .from('users')
+        .select('role,status_akun')
+        .eq('id', userId)
+        .single();
+
+    return data;
+  }
+
+  // ===========================
+  // LOGOUT
+  // ===========================
   Future<void> logout() async {
-    try {
-      await _client.auth.signOut();
-    } catch (e) {
-      throw Exception('Logout error: $e');
-    }
+    await _client.auth.signOut();
   }
-
-  Session? get session => _client.auth.currentSession;
 }

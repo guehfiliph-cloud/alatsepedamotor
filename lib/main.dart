@@ -3,56 +3,67 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
 
-// pages
+// =======================
+// PAGES IMPORT
+// =======================
 import 'pages/login_page.dart';
-import 'pages/home_page.dart';
+import 'pages/register_page.dart';
+
 import 'pages/alat_list_page.dart';
 import 'pages/buat_peminjaman_page.dart';
 import 'pages/peminjaman_saya_page.dart';
 import 'pages/pengembalian_page.dart';
-import 'pages/register_page.dart';
 
+import 'pages/admin_home_page.dart';
+import 'pages/petugas_home_page.dart';
+import 'pages/peminjam_home_page.dart';
+import 'pages/admin_approval_page.dart';
+
+// =======================
+// THEME COLORS
+// =======================
 const primaryBlue = Color(0xFF1565C0);
 const lightBlueBg = Color(0xFFE3F2FD);
-const darkText = Color(0xFF0D47A1);
 
+// =======================
+// ROUTES
+// =======================
 class Routes {
   static const login = '/login';
-  static const home = '/home';
+  static const register = '/register';
+
+  // Alat & Peminjaman
   static const alat = '/alat';
   static const buatPeminjaman = '/buat-peminjaman';
   static const peminjamanSaya = '/peminjaman-saya';
   static const pengembalian = '/pengembalian';
-  static const register = '/register';
+
+  // Role Home (KONSISTEN untuk LoginPage)
+  static const adminHome = '/admin-home';
+  static const petugasHome = '/petugas-home';
+  static const peminjamHome = '/peminjam-home';
+
+  // Admin Approval
+  static const approval = '/approval';
 }
 
-/// Inisialisasi Supabase dibuat aman (anti blank).
-Future<void> initSupabaseSafe() async {
-  final url = SupabaseConfig.supabaseUrl.trim();
-  final key = SupabaseConfig.anonKey.trim();
-
-  if (url.isEmpty || key.isEmpty || !url.startsWith('http')) {
-    debugPrint('SupabaseConfig belum valid. App tetap jalan tanpa supabase.');
-    return;
-  }
-
-  try {
-    await Supabase.initialize(https://muasrupptktcjodxgfpe.supabase.co, );
-    debugPrint('Supabase initialized ✅');
-  } catch (e) {
-    debugPrint('Supabase init error (safe): $e');
-  }
-}
-
+// =======================
+// MAIN FUNCTION
+// =======================
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // WAJIB: init supabase dulu supaya login tidak gagal diam-diam
-  await initSupabaseSafe();
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.anonKey,
+  );
 
   runApp(const MyApp());
 }
 
+// =======================
+// APP ROOT
+// =======================
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -61,6 +72,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Peminjaman Alat Sepeda Motor',
+
+      // =======================
+      // THEME
+      // =======================
       theme: ThemeData(
         primaryColor: primaryBlue,
         scaffoldBackgroundColor: lightBlueBg,
@@ -81,41 +96,107 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryBlue,
             foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(48),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            minimumSize: const Size.fromHeight(48),
           ),
         ),
       ),
 
-      // Gate cek session
+      // =======================
+      // START PAGE (ROLE GATE)
+      // =======================
       home: const InitGate(),
 
+      // =======================
+      // ROUTING
+      // =======================
       routes: {
+        // Auth
         Routes.login: (_) => const LoginPage(),
-        Routes.home: (_) => const HomePage(),
+        Routes.register: (_) => const RegisterPage(),
+
+        // Alat & Peminjaman
         Routes.alat: (_) => const AlatListPage(),
         Routes.buatPeminjaman: (_) => const BuatPeminjamanPage(),
         Routes.peminjamanSaya: (_) => const PeminjamanSayaPage(),
         Routes.pengembalian: (_) => const PengembalianPage(),
-        Routes.register: (_) => const RegisterPage(),
+
+        // Role Home
+        Routes.adminHome: (_) => const AdminHomePage(),
+        Routes.petugasHome: (_) => const PetugasHomePage(),
+        Routes.peminjamHome: (_) => const PeminjamHomePage(),
+
+        // Admin Approval
+        Routes.approval: (_) => const AdminApprovalPage(),
       },
     );
   }
 }
 
+// =======================
+// ROLE AUTH GATE
+// =======================
 class InitGate extends StatelessWidget {
   const InitGate({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    // kalau supabase belum siap / config kosong, tetap masuk login
-    try {
-      final session = Supabase.instance.client.auth.currentSession;
-      return session == null ? const LoginPage() : const HomePage();
-    } catch (_) {
+  Future<Widget> _redirectUser() async {
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+
+    // 1) Jika belum login
+    if (session == null) {
       return const LoginPage();
     }
+
+    final userId = session.user.id;
+
+    // 2) Ambil role & status akun dari tabel users
+    //    Jika record belum ada -> sign out (biar aman)
+    Map<String, dynamic>? userData;
+    try {
+      userData = await client
+          .from('users')
+          .select('role,status_akun')
+          .eq('id', userId)
+          .single();
+    } catch (_) {
+      await client.auth.signOut();
+      return const LoginPage();
+    }
+
+    final role = userData['role'] ?? 'peminjam';
+    final status = userData['status_akun'] ?? 'pending';
+
+    // 3) Jika akun belum aktif
+    if (status != "aktif") {
+      await client.auth.signOut();
+      return const LoginPage();
+    }
+
+    // 4) Redirect sesuai role
+    if (role == "admin") {
+      return const AdminHomePage();
+    } else if (role == "petugas") {
+      return const PetugasHomePage();
+    } else {
+      return const PeminjamHomePage();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Widget>(
+      future: _redirectUser(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return snapshot.data ?? const LoginPage();
+      },
+    );
   }
 }
