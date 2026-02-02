@@ -225,71 +225,117 @@ class _KategoriPageState extends State<KategoriPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Kelola Kategori"),
-        actions: [
-          IconButton(
-            tooltip: "Refresh",
-            onPressed: refresh,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFE3F2FD),
+
+      // ✅ AppBar DIHAPUS (biar tidak dobel dengan Dashboard Admin)
       floatingActionButton: FloatingActionButton(
         onPressed: dialogTambah,
         tooltip: "Tambah Kategori",
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFFB91C1C),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _futureKategori,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          }
 
-          final data = snapshot.data ?? [];
-          if (data.isEmpty) {
-            return const Center(child: Text("Belum ada kategori."));
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: data.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, i) {
-              final kat = data[i];
-              final nama = (kat['nama_kategori'] ?? '-').toString();
-
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      body: Column(
+        children: [
+          // ✅ HEADER PUTIH RAPI
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 6,
+                  color: Colors.black12,
+                  offset: Offset(0, 2),
                 ),
-                child: ListTile(
-                  leading: const Icon(Icons.category),
-                  title: Text(nama),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      IconButton(
-                        tooltip: "Edit",
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => dialogEdit(kat),
-                      ),
-                      IconButton(
-                        tooltip: "Hapus",
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => dialogHapus(kat),
-                      ),
-                    ],
+              ],
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.category, color: Color(0xFFB91C1C)),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "Kelola Kategori",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-              );
-            },
-          );
-        },
+                IconButton(
+                  tooltip: "Refresh",
+                  onPressed: refresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+          ),
+
+          // ✅ LIST KATEGORI
+          Expanded(
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _futureKategori,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                }
+
+                final data = snapshot.data ?? [];
+                if (data.isEmpty) {
+                  return const Center(child: Text("Belum ada kategori."));
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: data.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, i) {
+                    final kat = data[i];
+                    final nama = (kat['nama_kategori'] ?? '-').toString();
+
+                    return Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Color(0xFFDC2626),
+                          child: Icon(Icons.category, color: Colors.white),
+                        ),
+                        title: Text(
+                          nama,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        trailing: Wrap(
+                          spacing: 8,
+                          children: [
+                            IconButton(
+                              tooltip: "Edit",
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => dialogEdit(kat),
+                            ),
+                            IconButton(
+                              tooltip: "Hapus",
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => dialogHapus(kat),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

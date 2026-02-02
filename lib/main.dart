@@ -38,7 +38,7 @@ class Routes {
   static const peminjamanSaya = '/peminjaman-saya';
   static const pengembalian = '/pengembalian';
 
-  // Role Home (KONSISTEN untuk LoginPage)
+  // Role Home
   static const adminHome = '/admin-home';
   static const petugasHome = '/petugas-home';
   static const peminjamHome = '/peminjam-home';
@@ -48,7 +48,7 @@ class Routes {
 }
 
 // =======================
-// MAIN FUNCTION
+// MAIN FUNCTION ✅
 // =======================
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -146,28 +146,25 @@ class InitGate extends StatelessWidget {
     final session = client.auth.currentSession;
 
     // 1) Jika belum login
-    if (session == null) {
-      return const LoginPage();
-    }
+    if (session == null) return const LoginPage();
 
     final userId = session.user.id;
 
     // 2) Ambil role & status akun dari tabel users
-    //    Jika record belum ada -> sign out (biar aman)
-    Map<String, dynamic>? userData;
-    try {
-      userData = await client
-          .from('users')
-          .select('role,status_akun')
-          .eq('id', userId)
-          .single();
-    } catch (_) {
+    // pakai maybeSingle agar tidak crash kalau data belum ada
+    final userData = await client
+        .from('users')
+        .select('role,status_akun')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (userData == null) {
       await client.auth.signOut();
       return const LoginPage();
     }
 
-    final role = userData['role'] ?? 'peminjam';
-    final status = userData['status_akun'] ?? 'pending';
+    final role = (userData['role'] ?? 'peminjam').toString();
+    final status = (userData['status_akun'] ?? 'pending').toString();
 
     // 3) Jika akun belum aktif
     if (status != "aktif") {
@@ -176,13 +173,9 @@ class InitGate extends StatelessWidget {
     }
 
     // 4) Redirect sesuai role
-    if (role == "admin") {
-      return const AdminHomePage();
-    } else if (role == "petugas") {
-      return const PetugasHomePage();
-    } else {
-      return const PeminjamHomePage();
-    }
+    if (role == "admin") return const AdminHomePage();
+    if (role == "petugas") return const PetugasHomePage();
+    return const PeminjamHomePage();
   }
 
   @override

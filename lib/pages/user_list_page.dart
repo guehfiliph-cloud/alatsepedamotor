@@ -37,7 +37,9 @@ class _UserListPageState extends State<UserListPage> {
     final user = supabase.auth.currentUser;
     if (user == null) return null;
 
-    // ambil profil dari tabel users sesuai id auth
+    // NOTE:
+    // Kalau kolom status kamu sebenarnya "status_akun",
+    // ganti select(...) jadi: select('id, nama, email, role, status_akun')
     final data = await supabase
         .from('users')
         .select('id, nama, email, role, status')
@@ -273,6 +275,9 @@ class _UserListPageState extends State<UserListPage> {
     final String nama = (p?['nama'] ?? '-').toString();
     final String email = (p?['email'] ?? '-').toString();
     final String role = (p?['role'] ?? '-').toString();
+
+    // NOTE:
+    // Kalau kolom status kamu "status_akun", ganti p?['status'] -> p?['status_akun']
     final String status = (p?['status'] ?? '-').toString();
 
     return Container(
@@ -284,7 +289,11 @@ class _UserListPageState extends State<UserListPage> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(radius: 22, child: Icon(Icons.person)),
+          const CircleAvatar(
+            radius: 22,
+            backgroundColor: Color(0xFFF3E8FF),
+            child: Icon(Icons.person, color: Color(0xFF6D28D9)),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -337,104 +346,152 @@ class _UserListPageState extends State<UserListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Kelola User"),
-        actions: [
-          IconButton(
-            tooltip: "Refresh",
-            onPressed: refresh,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFE3F2FD),
+
       floatingActionButton: FloatingActionButton(
         tooltip: "Tambah User",
         onPressed: () => openUserForm(),
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFFB91C1C),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
 
-      // ✅ BODY: profil + list user
-      body: FutureBuilder<Map<String, dynamic>?>(
-        future: _futureProfilLogin,
-        builder: (context, profSnap) {
-          return FutureBuilder<List<Map<String, dynamic>>>(
-            future: _futureUsers,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+      body: Column(
+        children: [
+          // ✅ HEADER PUTIH RAPI (TANPA APPBAR)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 6,
+                  color: Colors.black12,
+                  offset: Offset(0, 2),
+                ),
+              ],
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.people, color: Color(0xFFB91C1C)),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "Kelola User",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  tooltip: "Refresh",
+                  onPressed: refresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+          ),
 
-              if (snapshot.hasError) {
-                return Center(child: Text("Error: ${snapshot.error}"));
-              }
+          // ✅ BODY: profil + list user
+          Expanded(
+            child: FutureBuilder<Map<String, dynamic>?>(
+              future: _futureProfilLogin,
+              builder: (context, profSnap) {
+                return FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _futureUsers,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-              final users = snapshot.data ?? [];
+                    if (snapshot.hasError) {
+                      return Center(child: Text("Error: ${snapshot.error}"));
+                    }
 
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // header profil login
-                  profilHeader(profSnap.data),
-                  const SizedBox(height: 14),
+                    final users = snapshot.data ?? [];
 
-                  if (users.isEmpty)
-                    const Center(child: Text("Data user belum ada."))
-                  else
-                    ...users.map((u) {
-                      final nama = (u['nama'] ?? '-') as String;
-                      final email = (u['email'] ?? '-') as String;
-                      final role = (u['role'] ?? '-')?.toString();
-                      final status = (u['status'] ?? '-')?.toString();
+                    return ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        profilHeader(profSnap.data),
+                        const SizedBox(height: 14),
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: const Icon(Icons.person),
-                            title: Text(nama),
-                            subtitle: Text(email),
-                            trailing: Wrap(
-                              spacing: 8,
-                              children: [
-                                if (role != null || status != null)
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                        if (users.isEmpty)
+                          const Center(child: Text("Data user belum ada."))
+                        else
+                          ...users.map((u) {
+                            final nama = (u['nama'] ?? '-') as String;
+                            final email = (u['email'] ?? '-') as String;
+                            final role = (u['role'] ?? '-')?.toString();
+                            final status = (u['status'] ?? '-')?.toString();
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Card(
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: ListTile(
+                                  leading: const CircleAvatar(
+                                    backgroundColor: Color(0xFFF3F4F6),
+                                    child: Icon(Icons.person),
+                                  ),
+                                  title: Text(
+                                    nama,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(email),
+                                  trailing: Wrap(
+                                    spacing: 10,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
                                     children: [
-                                      Text(
-                                        role ?? '',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                      if (role != null || status != null)
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              role ?? '',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(status ?? ''),
+                                          ],
                                         ),
+                                      IconButton(
+                                        tooltip: "Edit",
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () => openUserForm(user: u),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(status ?? ''),
+                                      IconButton(
+                                        tooltip: "Hapus",
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () => confirmDelete(u),
+                                      ),
                                     ],
                                   ),
-                                IconButton(
-                                  tooltip: "Edit",
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => openUserForm(user: u),
                                 ),
-                                IconButton(
-                                  tooltip: "Hapus",
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => confirmDelete(u),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                ],
-              );
-            },
-          );
-        },
+                              ),
+                            );
+                          }),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

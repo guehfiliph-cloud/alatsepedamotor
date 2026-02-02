@@ -53,12 +53,26 @@ class _AdminHomePageState extends m.State<AdminHomePage> {
       // ==========================
       appBar: m.AppBar(
         backgroundColor: const m.Color(0xFFB91C1C),
-        title: const m.Text("Dashboard Admin"),
+
+        title: const m.Text(
+          "Dashboard Admin",
+          style: m.TextStyle(
+            fontSize: 22, // ✅ ukuran lebih besar
+            fontWeight: m.FontWeight.bold, // ✅ lebih tegas
+            color: m.Colors.white,
+          ),
+        ),
+
         actions: [
+          // ✅ LOGOUT
           m.IconButton(
             tooltip: "Logout",
             onPressed: () => logout(context),
-            icon: const m.Icon(m.Icons.logout),
+            icon: const m.Icon(
+              m.Icons.logout,
+              size: 12, // ✅ icon lebih besar
+              color: m.Colors.white,
+            ),
           ),
         ],
       ),

@@ -252,153 +252,193 @@ class _AlatListPageState extends State<AlatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFE3F2FD),
-      appBar: AppBar(
-        title: const Text('Data Alat'),
-        backgroundColor: const Color(0xFFB91C1C),
-        actions: [
-          IconButton(
-            tooltip: "Refresh",
-            onPressed: refresh,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+
+      // ✅ AppBar DIHAPUS (biar tidak dobel dengan Dashboard Admin)
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFB91C1C),
         onPressed: () => openForm(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _futureAlat,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Terjadi error: ${snapshot.error}'));
-          }
 
-          final data = snapshot.data ?? [];
-          if (data.isEmpty) {
-            return const Center(child: Text('Data alat masih kosong'));
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: data.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final alat = data[index];
-
-              final namaAlat = (alat['nama_alat'] ?? '-').toString();
-              final stok = (alat['stok'] ?? 0) as int;
-
-              String namaKategori = '-';
-              final kategoriObj = alat['kategori'];
-              if (kategoriObj is Map<String, dynamic>) {
-                namaKategori = (kategoriObj['nama_kategori'] ?? '-').toString();
-              }
-
-              // ✅ INI yang kamu mau: Card custom (tidak overflow)
-              return Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+      body: Column(
+        children: [
+          // ✅ HEADER PUTIH RAPI
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 6,
+                  color: Colors.black12,
+                  offset: Offset(0, 2),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: Color(0xFFDC2626),
-                        child: Icon(Icons.motorcycle, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
+              ],
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.build, color: Color(0xFFB91C1C)),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "Data Alat",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  tooltip: "Refresh",
+                  onPressed: refresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+          ),
 
-                      Expanded(
-                        child: Column(
+          // ✅ ISI LIST
+          Expanded(
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _futureAlat,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Terjadi error: ${snapshot.error}'),
+                  );
+                }
+
+                final data = snapshot.data ?? [];
+                if (data.isEmpty) {
+                  return const Center(child: Text('Data alat masih kosong'));
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: data.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final alat = data[index];
+
+                    final namaAlat = (alat['nama_alat'] ?? '-').toString();
+                    final stok = (alat['stok'] ?? 0) as int;
+
+                    String namaKategori = '-';
+                    final kategoriObj = alat['kategori'];
+                    if (kategoriObj is Map<String, dynamic>) {
+                      namaKategori = (kategoriObj['nama_kategori'] ?? '-')
+                          .toString();
+                    }
+
+                    return Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              namaAlat,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            const CircleAvatar(
+                              backgroundColor: Color(0xFFDC2626),
+                              child: Icon(
+                                Icons.motorcycle,
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text('Kategori: $namaKategori'),
-                            const SizedBox(height: 4),
-                            Text('Stok: $stok'),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: stokColor(stok).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.circle,
-                                  size: 10,
-                                  color: stokColor(stok),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  stokLabel(stok),
-                                  style: TextStyle(
-                                    color: stokColor(stok),
-                                    fontWeight: FontWeight.w600,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    namaAlat,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
+                                  const SizedBox(height: 8),
+                                  Text('Kategori: $namaKategori'),
+                                  const SizedBox(height: 4),
+                                  Text('Stok: $stok'),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: stokColor(
+                                      stok,
+                                    ).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.circle,
+                                        size: 10,
+                                        color: stokColor(stok),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        stokLabel(stok),
+                                        style: TextStyle(
+                                          color: stokColor(stok),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      tooltip: "Edit",
+                                      icon: const Icon(Icons.edit, size: 20),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => openForm(alat: alat),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    IconButton(
+                                      tooltip: "Hapus",
+                                      icon: const Icon(Icons.delete, size: 20),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => confirmHapus(alat),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                tooltip: "Edit",
-                                icon: const Icon(Icons.edit, size: 20),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () => openForm(alat: alat),
-                              ),
-                              const SizedBox(width: 10),
-                              IconButton(
-                                tooltip: "Hapus",
-                                icon: const Icon(Icons.delete, size: 20),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () => confirmHapus(alat),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
