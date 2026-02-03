@@ -11,19 +11,27 @@ class UserListPage extends StatefulWidget {
 class _UserListPageState extends State<UserListPage> {
   final supabase = Supabase.instance.client;
 
-  // refresh trigger
+  // ==========================
+  // FUTURE untuk trigger refresh (list users)
+  // ==========================
   late Future<List<Map<String, dynamic>>> _futureUsers;
 
-  // profil yang sedang login
+  // ==========================
+  // FUTURE untuk data profil user yang sedang login
+  // ==========================
   late Future<Map<String, dynamic>?> _futureProfilLogin;
 
   @override
   void initState() {
     super.initState();
+    // inisialisasi data saat pertama kali halaman dibuka
     _futureUsers = fetchUsers();
     _futureProfilLogin = fetchProfilLogin();
   }
 
+  // ==========================
+  // READ: ambil list user
+  // ==========================
   Future<List<Map<String, dynamic>>> fetchUsers() async {
     final res = await supabase
         .from('users')
@@ -33,6 +41,9 @@ class _UserListPageState extends State<UserListPage> {
     return List<Map<String, dynamic>>.from(res);
   }
 
+  // ==========================
+  // READ: ambil profil user login (berdasarkan auth.currentUser.id)
+  // ==========================
   Future<Map<String, dynamic>?> fetchProfilLogin() async {
     final user = supabase.auth.currentUser;
     if (user == null) return null;
@@ -49,6 +60,9 @@ class _UserListPageState extends State<UserListPage> {
     return data;
   }
 
+  // ==========================
+  // Refresh ulang list + profil
+  // ==========================
   void refresh() {
     setState(() {
       _futureUsers = fetchUsers();
@@ -57,7 +71,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   // ==========================
-  // CREATE
+  // CREATE: tambah user baru
   // ==========================
   Future<void> createUser({
     required String nama,
@@ -76,7 +90,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   // ==========================
-  // UPDATE
+  // UPDATE: edit user
   // ==========================
   Future<void> updateUser({
     required String id,
@@ -99,16 +113,17 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   // ==========================
-  // DELETE
+  // DELETE: hapus user
   // ==========================
   Future<void> deleteUser(String id) async {
     await supabase.from('users').delete().eq('id', id);
   }
 
   // ==========================
-  // UI: Dialog Add/Edit
+  // UI: Dialog Add/Edit User
   // ==========================
   Future<void> openUserForm({Map<String, dynamic>? user}) async {
+    // controller untuk input
     final namaCtrl = TextEditingController(
       text: user?['nama']?.toString() ?? '',
     );
@@ -119,6 +134,7 @@ class _UserListPageState extends State<UserListPage> {
       text: user?['no_hp']?.toString() ?? '',
     );
 
+    // default value dropdown
     String role = (user?['role']?.toString() ?? 'peminjam');
     String status = (user?['status']?.toString() ?? 'approved');
 
@@ -180,10 +196,12 @@ class _UserListPageState extends State<UserListPage> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // ambil value input
               final nama = namaCtrl.text.trim();
               final email = emailCtrl.text.trim();
               final noHp = noHpCtrl.text.trim();
 
+              // validasi minimal
               if (nama.isEmpty || email.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Nama & Email wajib diisi")),
@@ -192,6 +210,7 @@ class _UserListPageState extends State<UserListPage> {
               }
 
               try {
+                // edit vs tambah
                 if (isEdit) {
                   await updateUser(
                     id: user['id'].toString(),
@@ -226,9 +245,13 @@ class _UserListPageState extends State<UserListPage> {
       ),
     );
 
+    // kalau dialog sukses (true) => refresh list
     if (result == true) refresh();
   }
 
+  // ==========================
+  // Konfirmasi hapus user
+  // ==========================
   Future<void> confirmDelete(Map<String, dynamic> user) async {
     final nama = user['nama']?.toString() ?? '-';
     final id = user['id']?.toString() ?? '';
@@ -269,7 +292,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   // ==========================
-  // HEADER PROFIL LOGIN
+  // HEADER: profil user login
   // ==========================
   Widget profilHeader(Map<String, dynamic>? p) {
     final String nama = (p?['nama'] ?? '-').toString();
@@ -303,11 +326,14 @@ class _UserListPageState extends State<UserListPage> {
                   nama,
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 15,
+                    fontSize: 12,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(email, style: const TextStyle(color: Colors.grey)),
+                Text(
+                  email,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -325,6 +351,9 @@ class _UserListPageState extends State<UserListPage> {
     );
   }
 
+  // ==========================
+  // Chip kecil untuk Role/Status (profil login)
+  // ==========================
   Widget _chip(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -335,9 +364,12 @@ class _UserListPageState extends State<UserListPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16),
+          Icon(icon, size: 14),
           const SizedBox(width: 6),
-          Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            text,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -346,8 +378,10 @@ class _UserListPageState extends State<UserListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // background halaman
       backgroundColor: const Color(0xFFE3F2FD),
 
+      // tombol tambah user
       floatingActionButton: FloatingActionButton(
         tooltip: "Tambah User",
         onPressed: () => openUserForm(),
@@ -357,7 +391,9 @@ class _UserListPageState extends State<UserListPage> {
 
       body: Column(
         children: [
-          // ✅ HEADER PUTIH RAPI (TANPA APPBAR)
+          // ==========================
+          // HEADER PUTIH (tanpa AppBar)
+          // ==========================
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -365,7 +401,7 @@ class _UserListPageState extends State<UserListPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 6,
+                  blurRadius: 8,
                   color: Colors.black12,
                   offset: Offset(0, 2),
                 ),
@@ -382,9 +418,10 @@ class _UserListPageState extends State<UserListPage> {
                 const Expanded(
                   child: Text(
                     "Kelola User",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
+                // tombol refresh data
                 IconButton(
                   tooltip: "Refresh",
                   onPressed: refresh,
@@ -394,7 +431,9 @@ class _UserListPageState extends State<UserListPage> {
             ),
           ),
 
-          // ✅ BODY: profil + list user
+          // ==========================
+          // BODY: profil login + list user
+          // ==========================
           Expanded(
             child: FutureBuilder<Map<String, dynamic>?>(
               future: _futureProfilLogin,
@@ -415,6 +454,7 @@ class _UserListPageState extends State<UserListPage> {
                     return ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
+                        // card profil user login (bagian atas)
                         profilHeader(profSnap.data),
                         const SizedBox(height: 14),
 
@@ -428,29 +468,60 @@ class _UserListPageState extends State<UserListPage> {
                             final status = (u['status'] ?? '-')?.toString();
 
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.only(bottom: 8),
                               child: Card(
-                                elevation: 3,
+                                elevation: 1, // lebih tipis
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: ListTile(
-                                  leading: const CircleAvatar(
-                                    backgroundColor: Color(0xFFF3F4F6),
-                                    child: Icon(Icons.person),
+                                  // ==========================
+                                  // ✅ BAGIAN INI YANG BUAT "USER LEBIH KECIL"
+                                  // ==========================
+                                  dense: true, // membuat ListTile lebih rapat
+                                  visualDensity: const VisualDensity(
+                                    vertical: -2, // makin minus = makin rapat
                                   ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+
+                                  // avatar lebih kecil
+                                  leading: const CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Color(0xFFF3F4F6),
+                                    child: Icon(Icons.person, size: 18),
+                                  ),
+
+                                  // nama lebih kecil + 1 baris
                                   title: Text(
                                     nama,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
                                     ),
                                   ),
-                                  subtitle: Text(email),
+
+                                  // email lebih kecil + 1 baris
+                                  subtitle: Text(
+                                    email,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+
                                   trailing: Wrap(
                                     spacing: 10,
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
                                     children: [
+                                      // kolom role + status dibuat kecil
                                       if (role != null || status != null)
                                         Column(
                                           mainAxisAlignment:
@@ -461,21 +532,39 @@ class _UserListPageState extends State<UserListPage> {
                                             Text(
                                               role ?? '',
                                               style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 11,
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
-                                            Text(status ?? ''),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              status ?? '',
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
                                           ],
                                         ),
+
+                                      // icon edit kecil + padding nol biar gak makan tempat
                                       IconButton(
                                         tooltip: "Edit",
-                                        icon: const Icon(Icons.edit),
+                                        icon: const Icon(Icons.edit, size: 18),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
                                         onPressed: () => openUserForm(user: u),
                                       ),
+
+                                      // icon delete kecil + padding nol biar rapat
                                       IconButton(
                                         tooltip: "Hapus",
-                                        icon: const Icon(Icons.delete),
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          size: 18,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
                                         onPressed: () => confirmDelete(u),
                                       ),
                                     ],

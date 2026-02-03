@@ -40,107 +40,271 @@ class _DashboardRingkasanPageState extends m.State<DashboardRingkasanPage> {
 
   @override
   m.Widget build(m.BuildContext context) {
-    return m.FutureBuilder<Map<String, int>>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != m.ConnectionState.done) {
-          return const m.Center(child: m.CircularProgressIndicator());
-        }
-        if (snap.hasError) {
-          return m.Center(child: m.Text("Error: ${snap.error}"));
-        }
+    final now = DateTime.now();
+    final hari = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ][now.weekday % 7];
 
-        final data = snap.data ?? {"alat": 0, "kategori": 0, "users": 0};
+    return m.Container(
+      decoration: const m.BoxDecoration(
+        gradient: m.LinearGradient(
+          begin: m.Alignment.topCenter,
+          end: m.Alignment.bottomCenter,
+          colors: [m.Color(0xFFF7F7F8), m.Color(0xFFF2F4F7)],
+        ),
+      ),
+      child: m.FutureBuilder<Map<String, int>>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState != m.ConnectionState.done) {
+            return const m.Center(child: m.CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return m.Center(child: m.Text("Error: ${snap.error}"));
+          }
 
-        return m.Column(
-          children: [
-            // ==========================
-            // HEADER PUTIH (RAPI & TEGAS)
-            // ==========================
-            m.Container(
-              width: double.infinity,
-              padding: const m.EdgeInsets.fromLTRB(20, 16, 20, 16),
-              decoration: const m.BoxDecoration(
-                color: m.Colors.white,
-                boxShadow: [
-                  m.BoxShadow(
-                    blurRadius: 6,
-                    color: m.Colors.black12,
-                    offset: m.Offset(0, 2),
+          final data = snap.data ?? {"alat": 0, "kategori": 0, "users": 0};
+
+          return m.Column(
+            children: [
+              // ==========================
+              // HEADER (RESPONSIVE, ANTI OVERFLOW)
+              // ==========================
+              m.SafeArea(
+                bottom: false,
+                child: m.Container(
+                  width: double.infinity,
+                  padding: const m.EdgeInsets.fromLTRB(18, 16, 18, 18),
+                  decoration: const m.BoxDecoration(
+                    color: m.Colors.white,
+                    borderRadius: m.BorderRadius.only(
+                      bottomLeft: m.Radius.circular(28),
+                      bottomRight: m.Radius.circular(28),
+                    ),
+                    boxShadow: [
+                      m.BoxShadow(
+                        blurRadius: 20,
+                        color: m.Colors.black12,
+                        offset: m.Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
-                borderRadius: m.BorderRadius.only(
-                  bottomLeft: m.Radius.circular(24),
-                  bottomRight: m.Radius.circular(24),
-                ),
-              ),
-              child: m.Row(
-                children: [
-                  const m.Icon(
-                    m.Icons.dashboard_rounded,
-                    color: m.Color(0xFFB91C1C),
-                  ),
-                  const m.SizedBox(width: 12),
-                  const m.Expanded(
-                    child: m.Column(
-                      crossAxisAlignment: m.CrossAxisAlignment.start,
-                      children: [
-                        m.Text(
-                          "Ringkasan",
-                          style: m.TextStyle(
-                            fontSize: 18,
-                            fontWeight: m.FontWeight.bold,
+                  child: m.Stack(
+                    children: [
+                      // background soft blobs
+                      m.Positioned(
+                        right: -50,
+                        top: -70,
+                        child: m.Container(
+                          width: 170,
+                          height: 170,
+                          decoration: m.BoxDecoration(
+                            color: const m.Color(
+                              0xFFB91C1C,
+                            ).withValues(alpha: 0.06),
+                            borderRadius: m.BorderRadius.circular(999),
                           ),
                         ),
-                        m.SizedBox(height: 4),
-                        m.Text(
-                          "Statistik data sistem",
-                          style: m.TextStyle(color: m.Colors.grey),
+                      ),
+                      m.Positioned(
+                        left: -40,
+                        bottom: -80,
+                        child: m.Container(
+                          width: 180,
+                          height: 180,
+                          decoration: m.BoxDecoration(
+                            color: const m.Color(
+                              0xFFEF4444,
+                            ).withValues(alpha: 0.05),
+                            borderRadius: m.BorderRadius.circular(999),
+                          ),
                         ),
-                      ],
+                      ),
+
+                      // content
+                      m.Column(
+                        mainAxisSize: m.MainAxisSize.min,
+                        children: [
+                          m.Row(
+                            crossAxisAlignment: m.CrossAxisAlignment.center,
+                            children: [
+                              m.Container(
+                                width: 52,
+                                height: 52,
+                                decoration: m.BoxDecoration(
+                                  color: const m.Color(0xFFF3F4F6),
+                                  borderRadius: m.BorderRadius.circular(18),
+                                ),
+                                child: const m.Icon(
+                                  m.Icons.dashboard_rounded,
+                                  color: m.Color(0xFFB91C1C),
+                                ),
+                              ),
+                              const m.SizedBox(width: 12),
+
+                              // ✅ area text dibuat fleksibel agar tidak nabrak tombol refresh
+                              m.Expanded(
+                                child: m.Column(
+                                  crossAxisAlignment:
+                                      m.CrossAxisAlignment.start,
+                                  children: [
+                                    const m.Text(
+                                      "Ringkasan",
+                                      maxLines: 1,
+                                      overflow: m.TextOverflow.ellipsis,
+                                      style: m.TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: m.FontWeight.w900,
+                                        color: m.Colors.black,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                    const m.SizedBox(height: 6),
+
+                                    // ✅ pakai Wrap supaya kalau sempit turun baris (anti overflow)
+                                    m.Wrap(
+                                      spacing: 10,
+                                      runSpacing: 8,
+                                      crossAxisAlignment:
+                                          m.WrapCrossAlignment.center,
+                                      children: [
+                                        const m.Text(
+                                          "Statistik data sistem",
+                                          style: m.TextStyle(
+                                            color: m.Colors.black54,
+                                            fontWeight: m.FontWeight.w600,
+                                          ),
+                                        ),
+                                        m.Container(
+                                          padding: const m.EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: m.BoxDecoration(
+                                            color: const m.Color(
+                                              0xFFB91C1C,
+                                            ).withValues(alpha: 0.08),
+                                            borderRadius:
+                                                m.BorderRadius.circular(999),
+                                          ),
+                                          child: m.Text(
+                                            hari,
+                                            maxLines: 1,
+                                            overflow: m.TextOverflow.ellipsis,
+                                            style: const m.TextStyle(
+                                              color: m.Color(0xFFB91C1C),
+                                              fontWeight: m.FontWeight.w800,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const m.SizedBox(width: 10),
+
+                              // tombol refresh (tetap)
+                              m.Container(
+                                width: 44,
+                                height: 44,
+                                decoration: m.BoxDecoration(
+                                  color: const m.Color(
+                                    0xFFB91C1C,
+                                  ).withValues(alpha: 0.08),
+                                  borderRadius: m.BorderRadius.circular(14),
+                                  border: m.Border.all(
+                                    color: const m.Color(
+                                      0xFFB91C1C,
+                                    ).withValues(alpha: 0.14),
+                                  ),
+                                ),
+                                child: m.IconButton(
+                                  tooltip: "Refresh",
+                                  onPressed: refresh,
+                                  icon: const m.Icon(
+                                    m.Icons.refresh_rounded,
+                                    color: m.Color(0xFFB91C1C),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const m.SizedBox(height: 14),
+
+                          // garis + tanggal
+                          m.Container(
+                            height: 1,
+                            color: const m.Color(0xFFE5E7EB),
+                          ),
+                          const m.SizedBox(height: 10),
+                          m.Row(
+                            children: [
+                              m.Icon(
+                                m.Icons.calendar_month_rounded,
+                                size: 16,
+                                color: m.Colors.black.withValues(alpha: 0.45),
+                              ),
+                              const m.SizedBox(width: 8),
+                              m.Text(
+                                "${now.day}/${now.month}/${now.year}",
+                                style: m.TextStyle(
+                                  color: m.Colors.black.withValues(alpha: 0.55),
+                                  fontWeight: m.FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const m.SizedBox(height: 14),
+
+              // ==========================
+              // ISI CARD (TETAP)
+              // ==========================
+              m.Expanded(
+                child: m.ListView(
+                  padding: const m.EdgeInsets.all(16),
+                  children: [
+                    _StatCardBig(
+                      title: "Total Alat",
+                      value: data["alat"] ?? 0,
+                      icon: m.Icons.build_rounded,
                     ),
-                  ),
-                  m.IconButton(
-                    tooltip: "Refresh",
-                    onPressed: refresh,
-                    icon: const m.Icon(m.Icons.refresh),
-                  ),
-                ],
+                    const m.SizedBox(height: 12),
+                    _StatCardBig(
+                      title: "Total Kategori",
+                      value: data["kategori"] ?? 0,
+                      icon: m.Icons.category_rounded,
+                    ),
+                    const m.SizedBox(height: 12),
+                    _StatCardBig(
+                      title: "Total User",
+                      value: data["users"] ?? 0,
+                      icon: m.Icons.people_alt_rounded,
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            const m.SizedBox(height: 14),
-
-            // ==========================
-            // ISI CARD
-            // ==========================
-            m.Expanded(
-              child: m.ListView(
-                padding: const m.EdgeInsets.all(16),
-                children: [
-                  _StatCardBig(
-                    title: "Total Alat",
-                    value: data["alat"] ?? 0,
-                    icon: m.Icons.build_rounded,
-                  ),
-                  const m.SizedBox(height: 12),
-                  _StatCardBig(
-                    title: "Total Kategori",
-                    value: data["kategori"] ?? 0,
-                    icon: m.Icons.category_rounded,
-                  ),
-                  const m.SizedBox(height: 12),
-                  _StatCardBig(
-                    title: "Total User",
-                    value: data["users"] ?? 0,
-                    icon: m.Icons.people_alt_rounded,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -159,48 +323,151 @@ class _StatCardBig extends m.StatelessWidget {
   @override
   m.Widget build(m.BuildContext context) {
     return m.Container(
-      padding: const m.EdgeInsets.all(16),
       decoration: m.BoxDecoration(
         color: m.Colors.white,
-        borderRadius: m.BorderRadius.circular(16),
+        borderRadius: m.BorderRadius.circular(20),
         boxShadow: [
           m.BoxShadow(
-            blurRadius: 10,
+            blurRadius: 18,
             color: m.Colors.black.withValues(alpha: 0.08),
-            offset: const m.Offset(0, 4),
+            offset: const m.Offset(0, 10),
           ),
         ],
+        border: m.Border.all(color: const m.Color(0xFFE5E7EB)),
       ),
-      child: m.Row(
+      child: m.Stack(
         children: [
-          m.Container(
-            width: 46,
-            height: 46,
-            decoration: m.BoxDecoration(
-              color: const m.Color(0xFFB91C1C).withValues(alpha: 0.12),
-              borderRadius: m.BorderRadius.circular(14),
+          m.Positioned(
+            right: -30,
+            top: -30,
+            child: m.Container(
+              width: 120,
+              height: 120,
+              decoration: m.BoxDecoration(
+                color: const m.Color(0xFFB91C1C).withValues(alpha: 0.06),
+                borderRadius: m.BorderRadius.circular(999),
+              ),
             ),
-            child: m.Icon(icon, color: const m.Color(0xFFB91C1C)),
           ),
-          const m.SizedBox(width: 12),
-          m.Expanded(
-            child: m.Column(
-              crossAxisAlignment: m.CrossAxisAlignment.start,
+          m.Positioned(
+            right: 30,
+            bottom: -40,
+            child: m.Container(
+              width: 140,
+              height: 140,
+              decoration: m.BoxDecoration(
+                color: const m.Color(0xFFEF4444).withValues(alpha: 0.05),
+                borderRadius: m.BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          m.Positioned.fill(
+            child: m.Align(
+              alignment: m.Alignment.centerLeft,
+              child: m.Container(
+                width: 6,
+                decoration: m.BoxDecoration(
+                  gradient: const m.LinearGradient(
+                    colors: [m.Color(0xFFB91C1C), m.Color(0xFFEF4444)],
+                    begin: m.Alignment.topCenter,
+                    end: m.Alignment.bottomCenter,
+                  ),
+                  borderRadius: m.BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+          m.Padding(
+            padding: const m.EdgeInsets.all(16),
+            child: m.Row(
               children: [
-                m.Text(
-                  title,
-                  style: const m.TextStyle(
-                    fontSize: 14,
-                    color: m.Colors.black54,
-                    fontWeight: m.FontWeight.w700,
+                m.Container(
+                  width: 52,
+                  height: 52,
+                  decoration: m.BoxDecoration(
+                    gradient: m.LinearGradient(
+                      colors: [
+                        const m.Color(0xFFB91C1C).withValues(alpha: 0.12),
+                        const m.Color(0xFFEF4444).withValues(alpha: 0.08),
+                      ],
+                      begin: m.Alignment.topLeft,
+                      end: m.Alignment.bottomRight,
+                    ),
+                    borderRadius: m.BorderRadius.circular(18),
+                    border: m.Border.all(
+                      color: const m.Color(0xFFB91C1C).withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: m.Icon(icon, color: const m.Color(0xFFB91C1C)),
+                ),
+                const m.SizedBox(width: 14),
+                m.Expanded(
+                  child: m.Column(
+                    crossAxisAlignment: m.CrossAxisAlignment.start,
+                    children: [
+                      m.Text(
+                        title,
+                        maxLines: 1,
+                        overflow: m.TextOverflow.ellipsis,
+                        style: const m.TextStyle(
+                          fontSize: 14,
+                          color: m.Colors.black54,
+                          fontWeight: m.FontWeight.w800,
+                        ),
+                      ),
+                      const m.SizedBox(height: 8),
+                      m.Row(
+                        crossAxisAlignment: m.CrossAxisAlignment.end,
+                        children: [
+                          m.Text(
+                            value.toString(),
+                            style: const m.TextStyle(
+                              fontSize: 32,
+                              fontWeight: m.FontWeight.w900,
+                              letterSpacing: -0.6,
+                            ),
+                          ),
+                          const m.SizedBox(width: 10),
+                          m.Container(
+                            padding: const m.EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: m.BoxDecoration(
+                              color: const m.Color(
+                                0xFFB91C1C,
+                              ).withValues(alpha: 0.08),
+                              borderRadius: m.BorderRadius.circular(999),
+                              border: m.Border.all(
+                                color: const m.Color(
+                                  0xFFB91C1C,
+                                ).withValues(alpha: 0.14),
+                              ),
+                            ),
+                            child: const m.Text(
+                              "items",
+                              style: m.TextStyle(
+                                fontSize: 12,
+                                fontWeight: m.FontWeight.w900,
+                                color: m.Color(0xFFB91C1C),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const m.SizedBox(height: 6),
-                m.Text(
-                  value.toString(),
-                  style: const m.TextStyle(
-                    fontSize: 26,
-                    fontWeight: m.FontWeight.w900,
+                m.Container(
+                  width: 34,
+                  height: 34,
+                  decoration: m.BoxDecoration(
+                    color: const m.Color(0xFFF3F4F6),
+                    borderRadius: m.BorderRadius.circular(12),
+                  ),
+                  child: const m.Icon(
+                    m.Icons.chevron_right_rounded,
+                    color: m.Colors.black45,
                   ),
                 ),
               ],

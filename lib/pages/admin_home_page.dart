@@ -18,9 +18,6 @@ class AdminHomePage extends m.StatefulWidget {
 class _AdminHomePageState extends m.State<AdminHomePage> {
   int _index = 0;
 
-  // ==========================
-  // LOGOUT FUNCTION
-  // ==========================
   Future<void> logout(m.BuildContext context) async {
     await Supabase.instance.client.auth.signOut();
     if (!context.mounted) return;
@@ -32,11 +29,8 @@ class _AdminHomePageState extends m.State<AdminHomePage> {
     );
   }
 
-  // ==========================
-  // HALAMAN MENU
-  // ==========================
   final pages = const [
-    DashboardRingkasanPage(), // ✅ TAB PERTAMA: RINGKASAN
+    DashboardRingkasanPage(),
     AlatListPage(),
     KategoriPage(),
     UserListPage(),
@@ -46,71 +40,102 @@ class _AdminHomePageState extends m.State<AdminHomePage> {
   @override
   m.Widget build(m.BuildContext context) {
     return m.Scaffold(
-      backgroundColor: const m.Color(0xFFE3F2FD),
-
-      // ==========================
-      // APPBAR
-      // ==========================
+      backgroundColor: const m.Color(0xFFEFF6FF),
       appBar: m.AppBar(
-        backgroundColor: const m.Color(0xFFB91C1C),
-
+        elevation: 0,
+        backgroundColor: m.Colors.transparent,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
         title: const m.Text(
           "Dashboard Admin",
           style: m.TextStyle(
-            fontSize: 22, // ✅ ukuran lebih besar
-            fontWeight: m.FontWeight.bold, // ✅ lebih tegas
+            fontSize: 18,
+            fontWeight: m.FontWeight.w900,
             color: m.Colors.white,
+            letterSpacing: 0.2,
           ),
         ),
-
         actions: [
-          // ✅ LOGOUT
-          m.IconButton(
-            tooltip: "Logout",
-            onPressed: () => logout(context),
-            icon: const m.Icon(
-              m.Icons.logout,
-              size: 12, // ✅ icon lebih besar
-              color: m.Colors.white,
+          m.Container(
+            margin: const m.EdgeInsets.only(right: 12),
+            decoration: m.BoxDecoration(
+              color: m.Colors.white.withValues(alpha: 0.18),
+              borderRadius: m.BorderRadius.circular(14),
+              border: m.Border.all(
+                color: m.Colors.white.withValues(alpha: 0.25),
+              ),
+            ),
+            child: m.IconButton(
+              tooltip: "Logout",
+              onPressed: () => logout(context),
+              icon: const m.Icon(
+                m.Icons.logout_rounded,
+                size: 20,
+                color: m.Colors.white,
+              ),
             ),
           ),
         ],
+        flexibleSpace: m.Container(
+          decoration: const m.BoxDecoration(
+            gradient: m.LinearGradient(
+              colors: [m.Color(0xFF7F1D1D), m.Color(0xFFEF4444)],
+              begin: m.Alignment.topLeft,
+              end: m.Alignment.bottomRight,
+            ),
+            boxShadow: [
+              m.BoxShadow(
+                blurRadius: 18,
+                color: m.Colors.black12,
+                offset: m.Offset(0, 8),
+              ),
+            ],
+            borderRadius: m.BorderRadius.only(
+              bottomLeft: m.Radius.circular(22),
+              bottomRight: m.Radius.circular(22),
+            ),
+          ),
+        ),
       ),
-
-      // ==========================
-      // BODY BERUBAH SESUAI MENU
-      // ==========================
-      body: pages[_index],
-
-      // ==========================
-      // BOTTOM NAVIGATION
-      // ==========================
+      body: m.Container(
+        decoration: const m.BoxDecoration(
+          gradient: m.LinearGradient(
+            begin: m.Alignment.topCenter,
+            end: m.Alignment.bottomCenter,
+            colors: [m.Color(0xFFEFF6FF), m.Color(0xFFF7F7F8)],
+          ),
+        ),
+        child: pages[_index],
+      ),
       bottomNavigationBar: m.BottomNavigationBar(
         currentIndex: _index,
-        onTap: (value) {
-          setState(() {
-            _index = value;
-          });
-        },
+        onTap: (value) => setState(() => _index = value),
+        backgroundColor: m.Colors.white,
         selectedItemColor: const m.Color(0xFFB91C1C),
         unselectedItemColor: m.Colors.grey,
         type: m.BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
+        selectedFontSize: 12,
+        unselectedFontSize: 11,
         items: const [
           m.BottomNavigationBarItem(
-            icon: m.Icon(m.Icons.dashboard),
+            icon: m.Icon(m.Icons.dashboard_rounded),
             label: "Ringkasan",
           ),
-          m.BottomNavigationBarItem(icon: m.Icon(m.Icons.build), label: "Alat"),
           m.BottomNavigationBarItem(
-            icon: m.Icon(m.Icons.category),
+            icon: m.Icon(m.Icons.build_rounded),
+            label: "Alat",
+          ),
+          m.BottomNavigationBarItem(
+            icon: m.Icon(m.Icons.category_rounded),
             label: "Kategori",
           ),
           m.BottomNavigationBarItem(
-            icon: m.Icon(m.Icons.people),
+            icon: m.Icon(m.Icons.people_alt_rounded),
             label: "User",
           ),
           m.BottomNavigationBarItem(
-            icon: m.Icon(m.Icons.verified_user),
+            icon: m.Icon(m.Icons.verified_user_rounded),
             label: "Pending",
           ),
         ],

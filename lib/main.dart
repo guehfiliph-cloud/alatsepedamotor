@@ -131,6 +131,10 @@ class MyApp extends StatelessWidget {
         // Admin Approval
         Routes.approval: (_) => const AdminApprovalPage(),
       },
+
+      // (opsional) kalau ada route typo, gak crash putih
+      onUnknownRoute: (_) =>
+          MaterialPageRoute(builder: (_) => const LoginPage()),
     );
   }
 }
@@ -151,7 +155,6 @@ class InitGate extends StatelessWidget {
     final userId = session.user.id;
 
     // 2) Ambil role & status akun dari tabel users
-    // pakai maybeSingle agar tidak crash kalau data belum ada
     final userData = await client
         .from('users')
         .select('role,status_akun')

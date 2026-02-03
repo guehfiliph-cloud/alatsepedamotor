@@ -59,25 +59,72 @@ class _KategoriPageState extends State<KategoriPage> {
     return list.length;
   }
 
+  InputDecoration _dec({
+    required String label,
+    required IconData icon,
+    String? hint,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFB91C1C), width: 1.6),
+      ),
+    );
+  }
+
   Future<void> dialogTambah() async {
     final ctrl = TextEditingController();
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text("Tambah Kategori"),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(labelText: "Nama kategori"),
+          decoration: _dec(
+            label: "Nama kategori",
+            icon: Icons.category_outlined,
+            hint: "Contoh: Kunci, Obeng, dll",
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text("Batal"),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Simpan"),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFB91C1C), Color(0xFFEF4444)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Simpan"),
+            ),
           ),
         ],
       ),
@@ -119,19 +166,35 @@ class _KategoriPageState extends State<KategoriPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text("Edit Kategori"),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(labelText: "Nama kategori"),
+          decoration: _dec(label: "Nama kategori", icon: Icons.edit_outlined),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text("Batal"),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Simpan"),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFB91C1C), Color(0xFFEF4444)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Simpan"),
+            ),
           ),
         ],
       ),
@@ -171,6 +234,7 @@ class _KategoriPageState extends State<KategoriPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text("Hapus Kategori"),
         content: Text("Yakin hapus kategori: $nama ?"),
         actions: [
@@ -179,6 +243,12 @@ class _KategoriPageState extends State<KategoriPage> {
             child: const Text("Batal"),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFB91C1C),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text("Hapus"),
           ),
@@ -225,19 +295,35 @@ class _KategoriPageState extends State<KategoriPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE3F2FD),
+      backgroundColor: const Color(0xFFEFF6FF),
 
       // ✅ AppBar DIHAPUS (biar tidak dobel dengan Dashboard Admin)
-      floatingActionButton: FloatingActionButton(
-        onPressed: dialogTambah,
-        tooltip: "Tambah Kategori",
-        backgroundColor: const Color(0xFFB91C1C),
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFB91C1C), Color(0xFFEF4444)],
+          ),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 18,
+              color: const Color(0xFFB91C1C).withValues(alpha: 0.22),
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: dialogTambah,
+          tooltip: "Tambah Kategori",
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add_rounded, color: Colors.white),
+        ),
       ),
 
       body: Column(
         children: [
-          // ✅ HEADER PUTIH RAPI
+          // ✅ HEADER PUTIH RAPI (lebih “hidup”)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -245,9 +331,9 @@ class _KategoriPageState extends State<KategoriPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 6,
+                  blurRadius: 14,
                   color: Colors.black12,
-                  offset: Offset(0, 2),
+                  offset: Offset(0, 6),
                 ),
               ],
               borderRadius: BorderRadius.only(
@@ -257,18 +343,59 @@ class _KategoriPageState extends State<KategoriPage> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.category, color: Color(0xFFB91C1C)),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    "Kelola Kategori",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB91C1C).withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFB91C1C).withValues(alpha: 0.14),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.category_rounded,
+                    color: Color(0xFFB91C1C),
                   ),
                 ),
-                IconButton(
-                  tooltip: "Refresh",
-                  onPressed: refresh,
-                  icon: const Icon(Icons.refresh),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Kelola Kategori",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Tambah, edit, hapus kategori alat",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB91C1C).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFB91C1C).withValues(alpha: 0.14),
+                    ),
+                  ),
+                  child: IconButton(
+                    tooltip: "Refresh",
+                    onPressed: refresh,
+                    icon: const Icon(Icons.refresh_rounded),
+                    color: const Color(0xFFB91C1C),
+                  ),
                 ),
               ],
             ),
@@ -299,32 +426,83 @@ class _KategoriPageState extends State<KategoriPage> {
                     final kat = data[i];
                     final nama = (kat['nama_kategori'] ?? '-').toString();
 
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 16,
+                            color: Colors.black.withValues(alpha: 0.06),
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
                       child: ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Color(0xFFDC2626),
-                          child: Icon(Icons.category, color: Colors.white),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFB91C1C), Color(0xFFEF4444)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.category_rounded,
+                            color: Colors.white,
+                          ),
                         ),
                         title: Text(
                           nama,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          "",
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
                         ),
                         trailing: Wrap(
-                          spacing: 8,
+                          spacing: 6,
                           children: [
-                            IconButton(
-                              tooltip: "Edit",
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => dialogEdit(kat),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3F4F6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                tooltip: "Edit",
+                                icon: const Icon(Icons.edit_rounded, size: 20),
+                                onPressed: () => dialogEdit(kat),
+                              ),
                             ),
-                            IconButton(
-                              tooltip: "Hapus",
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => dialogHapus(kat),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFB91C1C,
+                                ).withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                tooltip: "Hapus",
+                                icon: const Icon(
+                                  Icons.delete_rounded,
+                                  size: 20,
+                                ),
+                                color: const Color(0xFFB91C1C),
+                                onPressed: () => dialogHapus(kat),
+                              ),
                             ),
                           ],
                         ),
