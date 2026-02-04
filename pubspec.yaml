@@ -11,9 +11,24 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # =======================
+  # ICONS
+  # =======================
   cupertino_icons: ^1.0.8
+
+  # =======================
+  # SUPABASE
+  # =======================
   supabase_flutter: ^2.5.6
+
+  # =======================
+  # DATE FORMAT
+  # =======================
   intl: ^0.19.0
+
+  # =======================
+  # PICK IMAGE (UPLOAD FOTO)
+  # =======================
   image_picker: ^1.1.2
 
 dev_dependencies:

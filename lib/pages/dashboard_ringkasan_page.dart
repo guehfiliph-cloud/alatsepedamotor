@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart' as m;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// ✅ tambah ini (biar bisa panggil Routes.xxx)
+import '../routes.dart';
+
 class DashboardRingkasanPage extends m.StatefulWidget {
   const DashboardRingkasanPage({super.key});
 
@@ -275,7 +278,7 @@ class _DashboardRingkasanPageState extends m.State<DashboardRingkasanPage> {
               const m.SizedBox(height: 14),
 
               // ==========================
-              // ISI CARD (TETAP)
+              // ISI CARD (TETAP + ✅ tambah menu)
               // ==========================
               m.Expanded(
                 child: m.ListView(
@@ -297,6 +300,28 @@ class _DashboardRingkasanPageState extends m.State<DashboardRingkasanPage> {
                       title: "Total User",
                       value: data["users"] ?? 0,
                       icon: m.Icons.people_alt_rounded,
+                    ),
+
+                    // ✅ TAMBAHAN MENU ADMIN (CRUD)
+                    const m.SizedBox(height: 18),
+                    _ActionCardBig(
+                      title: "Data Peminjaman",
+                      subtitle: "Kelola semua data peminjaman (Admin)",
+                      icon: m.Icons.assignment_rounded,
+                      onTap: () => m.Navigator.pushNamed(
+                        context,
+                        Routes.adminPeminjaman,
+                      ),
+                    ),
+                    const m.SizedBox(height: 12),
+                    _ActionCardBig(
+                      title: "Pengembalian & Denda",
+                      subtitle: "Kelola pengembalian, terlambat, dan denda",
+                      icon: m.Icons.keyboard_return_rounded,
+                      onTap: () => m.Navigator.pushNamed(
+                        context,
+                        Routes.adminPengembalian,
+                      ),
                     ),
                   ],
                 ),
@@ -474,6 +499,142 @@ class _StatCardBig extends m.StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ✅ TAMBAHAN CLASS UNTUK MENU CARD (STYLE NYA NYATU)
+class _ActionCardBig extends m.StatelessWidget {
+  final String title;
+  final String subtitle;
+  final m.IconData icon;
+  final m.VoidCallback onTap;
+
+  const _ActionCardBig({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  m.Widget build(m.BuildContext context) {
+    return m.InkWell(
+      borderRadius: m.BorderRadius.circular(20),
+      onTap: onTap,
+      child: m.Container(
+        decoration: m.BoxDecoration(
+          color: m.Colors.white,
+          borderRadius: m.BorderRadius.circular(20),
+          boxShadow: [
+            m.BoxShadow(
+              blurRadius: 18,
+              color: m.Colors.black.withValues(alpha: 0.08),
+              offset: const m.Offset(0, 10),
+            ),
+          ],
+          border: m.Border.all(color: const m.Color(0xFFE5E7EB)),
+        ),
+        child: m.Stack(
+          children: [
+            m.Positioned(
+              right: -30,
+              top: -30,
+              child: m.Container(
+                width: 120,
+                height: 120,
+                decoration: m.BoxDecoration(
+                  color: const m.Color(0xFFB91C1C).withValues(alpha: 0.06),
+                  borderRadius: m.BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            m.Positioned.fill(
+              child: m.Align(
+                alignment: m.Alignment.centerLeft,
+                child: m.Container(
+                  width: 6,
+                  decoration: m.BoxDecoration(
+                    gradient: const m.LinearGradient(
+                      colors: [m.Color(0xFFB91C1C), m.Color(0xFFEF4444)],
+                      begin: m.Alignment.topCenter,
+                      end: m.Alignment.bottomCenter,
+                    ),
+                    borderRadius: m.BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ),
+            m.Padding(
+              padding: const m.EdgeInsets.all(16),
+              child: m.Row(
+                children: [
+                  m.Container(
+                    width: 52,
+                    height: 52,
+                    decoration: m.BoxDecoration(
+                      gradient: m.LinearGradient(
+                        colors: [
+                          const m.Color(0xFFB91C1C).withValues(alpha: 0.12),
+                          const m.Color(0xFFEF4444).withValues(alpha: 0.08),
+                        ],
+                        begin: m.Alignment.topLeft,
+                        end: m.Alignment.bottomRight,
+                      ),
+                      borderRadius: m.BorderRadius.circular(18),
+                      border: m.Border.all(
+                        color: const m.Color(
+                          0xFFB91C1C,
+                        ).withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: m.Icon(icon, color: const m.Color(0xFFB91C1C)),
+                  ),
+                  const m.SizedBox(width: 14),
+                  m.Expanded(
+                    child: m.Column(
+                      crossAxisAlignment: m.CrossAxisAlignment.start,
+                      children: [
+                        m.Text(
+                          title,
+                          maxLines: 1,
+                          overflow: m.TextOverflow.ellipsis,
+                          style: const m.TextStyle(
+                            fontSize: 15,
+                            fontWeight: m.FontWeight.w900,
+                          ),
+                        ),
+                        const m.SizedBox(height: 6),
+                        m.Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: m.TextOverflow.ellipsis,
+                          style: const m.TextStyle(
+                            color: m.Colors.black54,
+                            fontWeight: m.FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  m.Container(
+                    width: 34,
+                    height: 34,
+                    decoration: m.BoxDecoration(
+                      color: const m.Color(0xFFF3F4F6),
+                      borderRadius: m.BorderRadius.circular(12),
+                    ),
+                    child: const m.Icon(
+                      m.Icons.chevron_right_rounded,
+                      color: m.Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -32,7 +32,6 @@ class _AlatListPageState extends State<AlatListPage> {
     });
   }
 
-  // ✅ Join kategori + ambil foto_url
   Future<List<Map<String, dynamic>>> fetchAlat() async {
     final res = await supabase
         .from('alat_sepeda_motor')

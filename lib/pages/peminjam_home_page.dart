@@ -1,111 +1,113 @@
-import 'package:flutter/material.dart' as m;
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../main.dart';
-import 'alat_list_page.dart';
-import 'buat_peminjaman_page.dart';
+import '../widgets/dashboard_menu_tile.dart';
+import '../widgets/dashboard_profile_card.dart';
+import '../routes.dart';
 
-class PeminjamHomePage extends m.StatelessWidget {
+class PeminjamHomePage extends StatelessWidget {
   const PeminjamHomePage({super.key});
 
-  // ==========================
-  // LOGOUT FUNCTION
-  // ==========================
-  Future<void> logout(m.BuildContext context) async {
+  Future<void> _logout(BuildContext context) async {
     await Supabase.instance.client.auth.signOut();
-
-    if (!context.mounted) return;
-
-    m.Navigator.pushNamedAndRemoveUntil(
-      context,
-      Routes.login,
-      (route) => false,
-    );
+    if (context.mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, Routes.login, (_) => false);
+    }
   }
 
   @override
-  m.Widget build(m.BuildContext context) {
-    return m.Scaffold(
-      backgroundColor: const m.Color(0xFFE3F2FD),
-      appBar: m.AppBar(
-        title: const m.Text("Dashboard Peminjam"),
-        backgroundColor: m.Colors.green,
+  Widget build(BuildContext context) {
+    // Mengambil data user dari auth Supabase
+    final user = Supabase.instance.client.auth.currentUser;
+    final email = user?.email ?? '-';
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFE7F4FF),
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF06B6D4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text(
+          "Dashboard Peminjam",
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         actions: [
-          m.IconButton(
-            icon: const m.Icon(m.Icons.logout),
+          IconButton(
             tooltip: "Logout",
-            onPressed: () => logout(context),
+            onPressed: () => _logout(context),
+            icon: const Icon(Icons.logout_rounded),
           ),
         ],
       ),
-      body: m.ListView(
-        padding: const m.EdgeInsets.all(16),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // ==========================
-          // LIHAT DAFTAR ALAT
-          // ==========================
-          m.Card(
-            shape: m.RoundedRectangleBorder(
-              borderRadius: m.BorderRadius.circular(12),
-            ),
-            child: m.ListTile(
-              leading: const m.Icon(m.Icons.list),
-              title: const m.Text("Melihat Daftar Alat"),
-              subtitle: const m.Text("Cek alat dan ketersediaan stok"),
-              onTap: () {
-                m.Navigator.push(
-                  context,
-                  m.MaterialPageRoute(builder: (_) => const AlatListPage()),
-                );
-              },
-            ),
+          // Widget Card Profile Atas
+          DashboardProfileCard(
+            title: "Halo, Peminjam 👋",
+            email: email,
+            icon: Icons.person_rounded,
+            gradient: const [Color(0xFF2563EB), Color(0xFF06B6D4)],
           ),
+          const SizedBox(height: 14),
 
-          const m.SizedBox(height: 10),
-
-          // ==========================
-          // AJUKAN PEMINJAMAN
-          // ==========================
-          m.Card(
-            shape: m.RoundedRectangleBorder(
-              borderRadius: m.BorderRadius.circular(12),
-            ),
-            child: m.ListTile(
-              leading: const m.Icon(m.Icons.add_shopping_cart),
-              title: const m.Text("Ajukan Peminjaman"),
-              subtitle: const m.Text("Buat permintaan peminjaman alat"),
-              onTap: () {
-                m.Navigator.push(
-                  context,
-                  m.MaterialPageRoute(
-                    builder: (_) => const BuatPeminjamanPage(),
-                  ),
-                );
-              },
-            ),
+          // Menu: Ganti Profile
+          DashboardMenuTile(
+            icon: Icons.manage_accounts_rounded,
+            iconBg: const Color(0xFFB91C1C),
+            title: "Ganti Profile",
+            subtitle: "Ubah nama, no HP, dan foto",
+            onTap: () => Navigator.pushNamed(context, Routes.profile),
           ),
+          const SizedBox(height: 12),
 
-          const m.SizedBox(height: 10),
+          // Menu: Daftar Alat
+          DashboardMenuTile(
+            icon: Icons.list_alt_rounded,
+            iconBg: const Color(0xFF2563EB),
+            title: "Melihat Daftar Alat",
+            subtitle: "Lihat alat tersedia & detailnya",
+            onTap: () => Navigator.pushNamed(context, Routes.alat),
+          ),
+          const SizedBox(height: 12),
 
-          // ==========================
-          // PENGEMBALIAN ALAT
-          // ==========================
-          m.Card(
-            shape: m.RoundedRectangleBorder(
-              borderRadius: m.BorderRadius.circular(12),
-            ),
-            child: m.ListTile(
-              leading: const m.Icon(m.Icons.assignment_return),
-              title: const m.Text("Pengembalian Alat"),
-              subtitle: const m.Text("Fitur pengembalian (belum dibuat)"),
-              onTap: () {
-                m.ScaffoldMessenger.of(context).showSnackBar(
-                  const m.SnackBar(
-                    content: m.Text("Halaman pengembalian belum dibuat"),
-                  ),
-                );
-              },
-            ),
+          // Menu: Buat Peminjaman
+          DashboardMenuTile(
+            icon: Icons.add_circle_rounded,
+            iconBg: const Color(0xFF22C55E),
+            title: "Mengajukan Peminjaman",
+            subtitle: "Buat permintaan peminjaman alat",
+            onTap: () => Navigator.pushNamed(context, Routes.buatPeminjaman),
+          ),
+          const SizedBox(height: 12),
+
+          // Menu: Riwayat Peminjaman
+          DashboardMenuTile(
+            icon: Icons.assignment_turned_in_rounded,
+            iconBg: const Color(0xFFF97316),
+            title: "Peminjaman Saya",
+            subtitle: "Cek status peminjaman kamu",
+            onTap: () => Navigator.pushNamed(context, Routes.peminjamanSaya),
+          ),
+          const SizedBox(height: 12),
+
+          // Menu: Pengembalian
+          DashboardMenuTile(
+            icon: Icons.keyboard_return_rounded,
+            iconBg: const Color(0xFFEF4444),
+            title: "Mengembalikan Alat",
+            subtitle: "Isi pengembalian jika sudah selesai",
+            onTap: () => Navigator.pushNamed(context, Routes.pengembalian),
           ),
         ],
       ),

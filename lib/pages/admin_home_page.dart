@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' as m;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../main.dart';
+import '../routes.dart'; // ✅ ganti ini (jangan import main.dart)
 import 'dashboard_ringkasan_page.dart';
 import 'alat_list_page.dart';
 import 'kategori_page.dart';

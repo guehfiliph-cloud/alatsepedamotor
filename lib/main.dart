@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
+import 'routes.dart';
 
 // =======================
 // PAGES IMPORT
@@ -19,37 +20,18 @@ import 'pages/petugas_home_page.dart';
 import 'pages/peminjam_home_page.dart';
 import 'pages/admin_approval_page.dart';
 
+import 'pages/admin_peminjaman_page.dart';
+import 'pages/admin_pengembalian_page.dart';
+
+import 'pages/users_page.dart';
+import 'pages/petugas_pengembalian_page.dart';
+
 // =======================
 // THEME COLORS
 // =======================
 const primaryBlue = Color(0xFF1565C0);
 const lightBlueBg = Color(0xFFE3F2FD);
 
-// =======================
-// ROUTES
-// =======================
-class Routes {
-  static const login = '/login';
-  static const register = '/register';
-
-  // Alat & Peminjaman
-  static const alat = '/alat';
-  static const buatPeminjaman = '/buat-peminjaman';
-  static const peminjamanSaya = '/peminjaman-saya';
-  static const pengembalian = '/pengembalian';
-
-  // Role Home
-  static const adminHome = '/admin-home';
-  static const petugasHome = '/petugas-home';
-  static const peminjamHome = '/peminjam-home';
-
-  // Admin Approval
-  static const approval = '/approval';
-}
-
-// =======================
-// MAIN FUNCTION ✅
-// =======================
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -61,9 +43,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-// =======================
-// APP ROOT
-// =======================
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -72,10 +51,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Peminjaman Alat Sepeda Motor',
-
-      // =======================
-      // THEME
-      // =======================
       theme: ThemeData(
         primaryColor: primaryBlue,
         scaffoldBackgroundColor: lightBlueBg,
@@ -103,45 +78,37 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-
-      // =======================
-      // START PAGE (ROLE GATE)
-      // =======================
       home: const InitGate(),
-
-      // =======================
-      // ROUTING
-      // =======================
       routes: {
-        // Auth
         Routes.login: (_) => const LoginPage(),
         Routes.register: (_) => const RegisterPage(),
 
-        // Alat & Peminjaman
         Routes.alat: (_) => const AlatListPage(),
         Routes.buatPeminjaman: (_) => const BuatPeminjamanPage(),
         Routes.peminjamanSaya: (_) => const PeminjamanSayaPage(),
         Routes.pengembalian: (_) => const PengembalianPage(),
 
-        // Role Home
         Routes.adminHome: (_) => const AdminHomePage(),
         Routes.petugasHome: (_) => const PetugasHomePage(),
         Routes.peminjamHome: (_) => const PeminjamHomePage(),
 
-        // Admin Approval
         Routes.approval: (_) => const AdminApprovalPage(),
-      },
 
-      // (opsional) kalau ada route typo, gak crash putih
+        // ✅ ADMIN CRUD
+        Routes.adminPeminjaman: (_) => const AdminPeminjamanPage(),
+        Routes.adminPengembalian: (_) => const AdminPengembalianPage(),
+
+        // ✅ PROFILE + PETUGAS MONITOR
+        Routes.profile: (_) => const UsersPage(), // pastikan file/class ada
+        Routes.petugasMonitor: (_) =>
+            const PetugasPengembalianPage(), // pastikan file/class ada
+      },
       onUnknownRoute: (_) =>
           MaterialPageRoute(builder: (_) => const LoginPage()),
     );
   }
 }
 
-// =======================
-// ROLE AUTH GATE
-// =======================
 class InitGate extends StatelessWidget {
   const InitGate({super.key});
 
@@ -149,12 +116,10 @@ class InitGate extends StatelessWidget {
     final client = Supabase.instance.client;
     final session = client.auth.currentSession;
 
-    // 1) Jika belum login
     if (session == null) return const LoginPage();
 
     final userId = session.user.id;
 
-    // 2) Ambil role & status akun dari tabel users
     final userData = await client
         .from('users')
         .select('role,status_akun')
@@ -169,13 +134,11 @@ class InitGate extends StatelessWidget {
     final role = (userData['role'] ?? 'peminjam').toString();
     final status = (userData['status_akun'] ?? 'pending').toString();
 
-    // 3) Jika akun belum aktif
     if (status != "aktif") {
       await client.auth.signOut();
       return const LoginPage();
     }
 
-    // 4) Redirect sesuai role
     if (role == "admin") return const AdminHomePage();
     if (role == "petugas") return const PetugasHomePage();
     return const PeminjamHomePage();

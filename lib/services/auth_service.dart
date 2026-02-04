@@ -1,13 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
-  final SupabaseClient _client;
+  final SupabaseClient client;
 
-  AuthService(this._client);
+  AuthService(this.client);
 
-  // ===========================
-  // REGISTER USER + ROLE
-  // ===========================
+  // FUNGSI REGISTER: Perbaikan dari 'profiles' ke 'users'
   Future<void> register({
     required String nama,
     required String email,
@@ -16,56 +14,45 @@ class AuthService {
     required String role,
     required String statusAkun,
   }) async {
-    // 1. Signup Supabase Auth
-    final res = await _client.auth.signUp(email: email, password: password);
+    try {
+      // 1. SignUp ke Supabase Auth
+      final AuthResponse res = await client.auth.signUp(
+        email: email,
+        password: password,
+      );
 
-    final userId = res.user?.id;
+      final user = res.user;
+      if (user == null) throw Exception("Gagal mendaftarkan user.");
 
-    if (userId == null) {
-      throw Exception("Register gagal!");
+      // 2. Simpan ke tabel 'users'
+      await client.from('users').insert({
+        'id': user.id,
+        'nama': nama,
+        'email': email,
+        'no_hp': noHp,
+        'role': role,
+        'status_akun': statusAkun,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception("Terjadi kesalahan: $e");
     }
-
-    // 2. Insert ke tabel users
-    await _client.from('users').insert({
-      'id': userId,
-      'nama': nama,
-      'email': email,
-      'no_hp': noHp,
-      'role': role,
-      'status_akun': statusAkun,
-    });
   }
 
-  // ===========================
-  // LOGIN
-  // ===========================
-  Future<AuthResponse> login({
-    required String email,
-    required String password,
-  }) async {
-    return await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+  Future<AuthResponse> login(String email, String password) async {
+    try {
+      return await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
   }
 
-  // ===========================
-  // GET ROLE + STATUS
-  // ===========================
-  Future<Map<String, dynamic>> getUserRole(String userId) async {
-    final data = await _client
-        .from('users')
-        .select('role,status_akun')
-        .eq('id', userId)
-        .single();
-
-    return data;
-  }
-
-  // ===========================
-  // LOGOUT
-  // ===========================
-  Future<void> logout() async {
-    await _client.auth.signOut();
+  Future<void> signOut() async {
+    await client.auth.signOut();
   }
 }

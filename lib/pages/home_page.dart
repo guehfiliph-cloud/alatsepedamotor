@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../main.dart';
+import '../routes.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

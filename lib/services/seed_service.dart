@@ -8,16 +8,20 @@ class SeedService {
     if ((cek as List).isNotEmpty) return;
 
     // 1) kategori
-    final kategori = await _sb.from('kategori').insert([
-      {'nama_kategori': 'Perkakas Tangan Dasar'},
-      {'nama_kategori': 'Alat Ukur Presisi'},
-      {'nama_kategori': 'Alat Khusus Bengkel'},
-      {'nama_kategori': 'Alat Elektronik'},
-      {'nama_kategori': 'Mesin/Kompressor'},
-    ]).select('id,nama_kategori');
+    final kategori = await _sb
+        .from('kategori')
+        .insert([
+          {'nama_kategori': 'Perkakas Tangan Dasar'},
+          {'nama_kategori': 'Alat Ukur Presisi'},
+          {'nama_kategori': 'Alat Khusus Bengkel'},
+          {'nama_kategori': 'Alat Elektronik'},
+          {'nama_kategori': 'Mesin/Kompressor'},
+        ])
+        .select('id,nama_kategori');
 
     int idByName(String name) =>
-        (kategori as List).firstWhere((k) => k['nama_kategori'] == name)['id'] as int;
+        (kategori as List).firstWhere((k) => k['nama_kategori'] == name)['id']
+            as int;
 
     final kTangan = idByName('Perkakas Tangan Dasar');
     final kPresisi = idByName('Alat Ukur Presisi');
